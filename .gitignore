@@ -5,3 +5,15 @@
 /output/
 BASE_PATH
 .DS_Store
+
+*.swp
+*.swo
+
+!.gitkeep
+
+.rvmrc
+_site
+.jekyll
+.bundle
+.sass-cache
+

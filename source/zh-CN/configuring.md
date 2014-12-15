@@ -172,15 +172,7 @@ end
 ```
 
 在代码块中可用的方法如下所示：
-
-* `assets`：是否允许脚手架创建静态资源文件，默认为 `true`。
-* `force_plural`：是否允许使用复数形式的模型名，默认为 `false`。
-* `helper`：是否生成帮助方法文件，默认为 `true`。
-* `integration_tool`：设置使用哪个集成工具，默认为 `nil`。
-* `javascripts`：是否允许脚手架创建 JavaScript 文件，默认为 `true`。
-* `javascript_engine`：设置生成静态资源文件时使用的预处理引擎（例如 CoffeeScript），默认为 `nil`。
-* `orm`：设置使用哪个 ORM。默认为 `false`，使用 Active Record。
-* `resource_controller`：设定执行 `rails generate resource` 命令时使用哪个生成器生成控制器，默认为 `:controller`。
+* `assets`：是否允许脚手架创建静态资源文件，默认为 `true`。 * `force_plural`：是否允许使用复数形式的模型名，默认为 `false`。 * `helper`：是否生成帮助方法文件，默认为 `true`。 * `integration_tool`：设置使用哪个集成工具，默认为 `nil`。 * `javascripts`：是否允许脚手架创建 JavaScript 文件，默认为 `true`。 * `javascript_engine`：设置生成静态资源文件时使用的预处理引擎（例如 CoffeeScript），默认为 `nil`。 * `orm`：设置使用哪个 ORM。默认为 `false`，使用 Active Record。 * `resource_controller`：设定执行 `rails generate resource` 命令时使用哪个生成器生成控制器，默认为 `:controller`。
 * `scaffold_controller`：和 `resource_controller` 不同，设定执行 `rails generate scaffold` 命令时使用哪个生成器生成控制器，默认为 `:scaffold_controller`。
 * `stylesheets`：是否启用生成器中的样式表文件钩子，在执行脚手架时使用，也可用于其他生成器，默认值为 `true`。
 * `stylesheet_engine`：设置生成静态资源文件时使用的预处理引擎（例如 Sass），默认为 `:css`。

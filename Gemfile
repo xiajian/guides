@@ -1,7 +1,6 @@
-source 'https://rubygems.org'
-
+# source 'https://rubygems.org'
+source 'http://ruby.taobao.org'
 gem 'activesupport'
-
 gem 'actionpack'
 
 group :doc do
@@ -9,6 +8,4 @@ group :doc do
 end
 
 gem 'nokogiri'
-
 gem 'rake'
-
