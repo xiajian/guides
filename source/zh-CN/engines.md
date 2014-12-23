@@ -5,27 +5,27 @@ In this guide you will learn about engines and how they can be used to provide
 additional functionality to their host applications through a clean and very
 easy-to-use interface.
 
-After reading this guide, you will know:
+本指南将介绍engines，了解engines如何通过干净易用的接口为其宿主程序添加功能。
 
-* What makes an engine.
-* How to generate an engine.
-* Building features for the engine.
-* Hooking the engine into an application.
-* Overriding engine functionality in the application.
+
+读完本文，你将学到：
+
+* 什么是engine
+* 怎样生成engine
+* 为engine创建特性
+* 将engine嵌入到应用中
+* 在应用中覆盖Engine的功能
 
 --------------------------------------------------------------------------------
 
 What are engines?
 -----------------
 
-Engines can be considered miniature applications that provide functionality to
-their host applications. A Rails application is actually just a "supercharged"
-engine, with the `Rails::Application` class inheriting a lot of its behavior
-from `Rails::Engine`.
+Engines可以看作为宿主应用提供功能的最小化应用程序。Rails应用实际上是“增强版”的
+engine，其中，`Rails::Application`类从`Rails::Engine`类中继承了很多方法。
 
-Therefore, engines and applications can be thought of almost the same thing,
-just with subtle differences, as you'll see throughout this guide. Engines and
-applications also share a common structure.
+所以，engines和应用可以看作是仅有轻微区别的同一事物。正如你所见，Engines与应用
+共享通用的结构。
 
 Engines are also closely related to plugins. The two share a common `lib`
 directory structure, and are both generated using the `rails plugin new`
@@ -36,35 +36,36 @@ all the features of `--full`, and then some. This guide will refer to these
 "full plugins" simply as "engines" throughout. An engine **can** be a plugin,
 and a plugin **can** be an engine.
 
-The engine that will be created in this guide will be called "blorgh". This
-engine will provide blogging functionality to its host applications, allowing
-for new articles and comments to be created. At the beginning of this guide, you
-will be working solely within the engine itself, but in later sections you'll
-see how to hook it into an application.
+Engines与插件也很相似。两者共享相同的`lib`目录结构，并且都可通过`rails plugin new`
+创建。唯一的区别在于，engine被Rails看作"full plugin"(即在使用`rails plugin new`命令时，传递
+`--full`选项)。也可使用`--mountable`选项，其包含了`--full`的所有特性，以及一些其他特性。本指南
+将"full plugins"简化为engines。engine可以是插件，插件也可称为engine。
 
-Engines can also be isolated from their host applications. This means that an
-application is able to have a path provided by a routing helper such as
-`articles_path` and use an engine also that provides a path also called
-`articles_path`, and the two would not clash. Along with this, controllers, models
-and table names are also namespaced. You'll see how to do this later in this
-guide.
+本指南中创建名为"blorgh"的engine，其提供为宿主应用程序提供博客的功能，并允许创建
+新的文章和注释。在指南的开始，仅关于engine本身。但在随后的章节，将看到如何将其挂载到
+应用程序中。
+
+Engine可以从宿主应用程序中隔离。这意味着，应用程序的中`articles_path`路由辅助方法和engine中的
+路由辅助方法并不冲突。除此之外，控制器，模型以及表名都会被命名空间隔离。随后，你就会看到如何
+处理这个。
 
 It's important to keep in mind at all times that the application should
 **always** take precedence over its engines. An application is the object that
 has final say in what goes on in its environment. The engine should
 only be enhancing it, rather than changing it drastically.
 
-To see demonstrations of other engines, check out
-[Devise](https://github.com/plataformatec/devise), an engine that provides
-authentication for its parent applications, or
-[Forem](https://github.com/radar/forem), an engine that provides forum
-functionality. There's also [Spree](https://github.com/spree/spree) which
-provides an e-commerce platform, and
-[RefineryCMS](https://github.com/refinery/refinerycms), a CMS engine.
+注意: **应用程序总是优先于其engine**。在自己的运行环境中，应用程序说了算，engine仅仅起到辅助
+增强的作用，而不是彻底的改变它。
 
-Finally, engines would not have been possible without the work of James Adam,
-Piotr Sarnacki, the Rails Core Team, and a number of other people. If you ever
-meet them, don't forget to say thanks!
+可以通过查看engine的代码，从而加强对其的认识: 
+
+* [Devise](https://github.com/plataformatec/devise) - 提供授权的engine
+* [Forem](https://github.com/radar/forem) - 提供论坛功能的engine
+* [Spree](https://github.com/spree/spree) - 提供电子商务平台的engine
+* [RefineryCMS](https://github.com/refinery/refinerycms) - CMS engine
+
+最后，没有James Adam、Piotr Sarnacki、Rails核心团队以及其他的所有人， engine将不会诞生。如果你
+见到他们，别忘了道谢。
 
 Generating an engine
 --------------------
@@ -73,11 +74,14 @@ To generate an engine, you will need to run the plugin generator and pass it
 options as appropriate to the need. For the "blorgh" example, you will need to
 create a "mountable" engine, running this command in a terminal:
 
+为了生成engine, 需要运行plugin生成器，并传递所需的最佳选项。以"blorgh"为例，可能需要传递
+"mountable"选项，命令如下:
+
 ```bash
 $ bin/rails plugin new blorgh --mountable
 ```
 
-The full list of options for the plugin generator may be seen by typing:
+插件生成器可选的全部列表如下(注意，不要在rails项目下运行该命令):
 
 ```bash
 $ bin/rails plugin --help
@@ -89,16 +93,18 @@ skeleton structure as would the `--full` option. The `--full` option tells the
 generator that you want to create an engine, including a skeleton structure
 that provides the following:
 
-  * An `app` directory tree
-  * A `config/routes.rb` file:
+`--mountable`选项告诉生成器，创建一个"mountable"且命名隔离的engine。生成器将提供与`--full`选项
+类似的框架结构。`--full`选项创建包含如下结构的engine :
+
+  * `app`目录树directory tree
+  * 包含如下内容的`config/routes.rb`文件:
 
     ```ruby
     Rails.application.routes.draw do
     end
     ```
 
-  * A file at `lib/blorgh/engine.rb`, which is identical in function to a
-    standard Rails application's `config/application.rb` file:
+  * `lib/blorgh/engine.rb`，其功能类似Rails项目的`config/application.rb`:
 
     ```ruby
     module Blorgh
@@ -107,10 +113,10 @@ that provides the following:
     end
     ```
 
-The `--mountable` option will add to the `--full` option:
+`--mountable`选项比`--full`多加的内容:
 
-  * Asset manifest files (`application.js` and `application.css`)
-  * A namespaced `ApplicationController` stub
+  * 资源清单文件(`application.js` and `application.css`)
+  * `ApplicationController`的命名空间的桩
   * A namespaced `ApplicationHelper` stub
   * A layout view template for the engine
   * Namespace isolation to `config/routes.rb`:

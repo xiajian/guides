@@ -16,6 +16,16 @@ ruby -e "$(curl -sSL https://rawgithub.com/ruby-china/guides/master/install.rb)"
 ruby <(wget --no-check-certificate https://rawgithub.com/ruby-china/guides/master/install.rb -O -)
 ```
 
+然后，安装`install.rb`中步骤一步一步来: 
+
+1. 第一步，询问是否更改代码库默认存放的目录(y/N), 如果回答y，则询问在创建的新的目录的名
+2. 第二部，四个选项询问创建的目录：
+  1. rails/rails
+  2. ruby-china/guides
+  3. ruby-china/ruby-china.github.io
+  4. ALL
+  
+
 会抓取 `ruby-china/rails` 与 `ruby-china/guides` 这两个代码库。
 
 `ruby-china/rails`：更新原文用。
