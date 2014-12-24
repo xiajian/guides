@@ -117,9 +117,9 @@ that provides the following:
 
   * 资源清单文件(`application.js` and `application.css`)
   * `ApplicationController`的命名空间的桩
-  * A namespaced `ApplicationHelper` stub
-  * A layout view template for the engine
-  * Namespace isolation to `config/routes.rb`:
+  * `ApplicationHelper`命名空间的桩
+  * engine的视图布局模板
+  * `config/routes.rb`中的命名隔离 :
 
     ```ruby
     Blorgh::Engine.routes.draw do
@@ -149,9 +149,8 @@ mount Blorgh::Engine, at: "blorgh"
 
 #### Critical Files
 
-At the root of this brand new engine's directory lives a `blorgh.gemspec` file.
-When you include the engine into an application later on, you will do so with
-this line in the Rails application's `Gemfile`:
+在每个engine目录下，都存在`blorgh.gemspec`文件。当将engine包含到应用程序中时，需要在
+Rails应用程序的`Gemfile`，添加如下的行: 
 
 ```ruby
 gem 'blorgh', path: "vendor/engines/blorgh"
@@ -162,6 +161,9 @@ the `Gemfile`, Bundler will load it as such, parsing this `blorgh.gemspec` file
 and requiring a file within the `lib` directory called `lib/blorgh.rb`. This
 file requires the `blorgh/engine.rb` file (located at `lib/blorgh/engine.rb`)
 and defines a base module called `Blorgh`.
+
+不要忘记运行`bundle install`。通过在`Gemfile`中指定gem，Bundler将会加载，并解析`blorgh.gemspec`文件，加载`lib/blorgh.rb`
+文件。`lib/blorgh.rb`需要require `blorgh/engine.rb`文件(位于`lib/blorgh/engine.rb`)，并定义名为`Blorgh`的基础模块。
 
 ```ruby
 require "blorgh/engine"
