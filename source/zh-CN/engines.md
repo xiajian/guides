@@ -307,6 +307,8 @@ with some new twists.
 The first thing to generate for a blog engine is the `Article` model and related
 controller. To quickly generate this, you can use the Rails scaffold generator.
 
+首先为`blog`生成`Article`模型，以及相关的控制器。为了快速生成资源，需要使用scaffold生成器。
+
 ```bash
 $ bin/rails generate scaffold article title:string text:text
 ```
@@ -356,6 +358,8 @@ to the `isolate_namespace` call within the `Engine` class.
 
 scaffold生成器所做的第一件事是，调用`active_record`生成器，生成迁移和资源模型。注意，
 这里的迁移名为`create_blorgh_articles`，而不是`create_articles`。模型文件也是如此。
+
+> 注: 每个invoke都代表调用一个生成器。
 
 Next, the `test_unit` generator is invoked for this model, generating a model
 test at `test/models/blorgh/article_test.rb` (rather than
@@ -437,6 +441,9 @@ engine's layout file, `app/views/layouts/blorgh/application.html.erb`, doesn't
 load it. To make the scaffold styling apply, insert this line into the `<head>`
 tag of this layout:
 
+由于engine的布局文件的原因，scaffold的样式并不因用到engine中。为了应用scaffold的样式，
+在布局的`<head>`中，插入如下的行: 
+
 ```erb
 <%= stylesheet_link_tag "scaffold" %>
 ```
@@ -448,9 +455,15 @@ running `rails server` in `test/dummy`. When you open
 been generated. Click around! You've just generated your first engine's first
 functions.
 
+在engine的根目录下，运行`rake db:migrate`，就可以看到项目，然后，在嵌入的测试项目中，运行
+`rails server`，打开`http://localhost:3000/blorgh/articles`，看到默认生成的scaffold。
+
 If you'd rather play around in the console, `rails console` will also work just
 like a Rails application. Remember: the `Article` model is namespaced, so to
 reference it you must call it as `Blorgh::Article`.
+
+如果，你更加喜欢控制台，`rails console`的效果和Rails应用程序中类似，只不过，`Article`模型被命名空间隔离，
+引用的时候需要调用`Blorgh::Article`。
 
 ```ruby
 >> Blorgh::Article.find(1)
@@ -461,6 +474,9 @@ One final thing is that the `articles` resource for this engine should be the ro
 of the engine. Whenever someone goes to the root path where the engine is
 mounted, they should be shown a list of articles. This can be made to happen if
 this line is inserted into the `config/routes.rb` file inside the engine:
+
+最后，engine中的`articles`资源应该是engine的根。无论何时何处，engine的根目录都应该
+列出文章列表。这需要在engine的`config/routes.rb`写入如下的行: 
 
 ```ruby
 root to: "articles#index"
@@ -659,11 +675,17 @@ mount the engine into an application and the initial setup required, as well as
 linking the engine to a `User` class provided by the application to provide
 ownership for articles and comments within the engine.
 
+在应用程序中使用engine是非常的容易的。本节覆盖如何将engine挂载到应用程序中，初始化设置，以及
+将engine链接到应用程序提供的`User`类中，从而提供文章和注释的关联用户的关系。
+
 ### Mounting the Engine
 
 First, the engine needs to be specified inside the application's `Gemfile`. If
 there isn't an application handy to test this out in, generate one using the
 `rails new` command outside of the engine directory like this:
+
+首先，需要在应用程序的`Gemfile`中，指定engine。如果没有现成的测试应用程序，就使用`rails new`
+生成一个新的。
 
 ```bash
 $ rails new unicorn
@@ -679,19 +701,23 @@ gem 'devise'
 However, because you are developing the `blorgh` engine on your local machine,
 you will need to specify the `:path` option in your `Gemfile`:
 
+如果，在本地机器开发`blorgh`，可以在`Gemfile`中，使用`:path`选项来指定。
+
 ```ruby
 gem 'blorgh', path: "/path/to/blorgh"
 ```
 
-Then run `bundle` to install the gem.
+运行`bundle`来安装gen。
 
 As described earlier, by placing the gem in the `Gemfile` it will be loaded when
 Rails is loaded. It will first require `lib/blorgh.rb` from the engine, then
 `lib/blorgh/engine.rb`, which is the file that defines the major pieces of
 functionality for the engine.
 
-To make the engine's functionality accessible from within an application, it
-needs to be mounted in that application's `config/routes.rb` file:
+如上所述，`Gemfile`中列出的gem包，将会在Rails加载时加载。首先，加载`lib/blorgh.rb`，
+然后，加载`lib/blorgh/engine.rb`(定义了engine的主要的功能)。
+
+为了让应用程序可以访问engine的功能，需要将engine挂载到应用程序的`config/routes.rb`文件中: 
 
 ```ruby
 mount Blorgh::Engine, at: "/blog"
@@ -701,10 +727,16 @@ This line will mount the engine at `/blog` in the application. Making it
 accessible at `http://localhost:3000/blog` when the application runs with `rails
 server`.
 
+上述代码，将engine挂载到应用程序的`/blog`目录下。然后，运行`rails server`，并通过
+`http://localhost:3000/blog`访问。
+
 NOTE: Other engines, such as Devise, handle this a little differently by making
 you specify custom helpers (such as `devise_for`) in the routes. These helpers
 do exactly the same thing, mounting pieces of the engines's functionality at a
 pre-defined path which may be customizable.
+
+注意: 有一些engines，比如，Devise，挂载的方式稍微有些不同，在路由中使用了像`devise_for`这样的
+自定义辅助方法)。这些辅助方法做的事情是类似的，将engine的部分功能挂载在一个可预定义的路仅中。
 
 ### Engine setup
 
@@ -712,6 +744,8 @@ The engine contains migrations for the `blorgh_articles` and `blorgh_comments`
 table which need to be created in the application's database so that the
 engine's models can query them correctly. To copy these migrations into the
 application use this command:
+
+engine中包含了`blorgh_articles`和`blorgh_comments`这样的表的迁移。
 
 ```bash
 $ rake blorgh:install:migrations
