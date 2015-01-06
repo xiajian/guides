@@ -745,7 +745,9 @@ table which need to be created in the application's database so that the
 engine's models can query them correctly. To copy these migrations into the
 application use this command:
 
-engine中包含了`blorgh_articles`和`blorgh_comments`这样的表的迁移。
+engine中包含了`blorgh_articles`和`blorgh_comments`这样的表的迁移，这些迁移将在
+在应用程序中运行，从而创建响应的表，使得engine的模型可以被正确的查询。将迁移
+复制到应用程序中，可以使用如下的命令。
 
 ```bash
 $ rake blorgh:install:migrations
@@ -753,6 +755,8 @@ $ rake blorgh:install:migrations
 
 If you have multiple engines that need migrations copied over, use
 `railties:install:migrations` instead:
+
+如果存在多个engine需要复制迁移，请使用`railties:install:migrations`: 
 
 ```bash
 $ rake railties:install:migrations
@@ -762,6 +766,9 @@ This command, when run for the first time, will copy over all the migrations
 from the engine. When run the next time, it will only copy over migrations that
 haven't been copied over already. The first run for this command will output
 something such as this:
+
+该命令第一次运行时，将engine中所有迁移拷贝到应用程序中。第二次运行时，仅仅拷贝那些
+没有拷贝过的。命令的第一次运行输出如下: 
 
 ```bash
 Copied migration [timestamp_1]_create_blorgh_articles.rb from blorgh
@@ -773,6 +780,9 @@ timestamp (`[timestamp_2]`) will be the current time plus a second. The reason
 for this is so that the migrations for the engine are run after any existing
 migrations in the application.
 
+第一个时间戳(`[timestamp_1]`)是当前时间，第二个时间戳(`[timestamp_2]`)是当前时间+1秒。
+这样设计的原因是为了将engine的迁移在应用程序的迁移之后运行。
+
 To run these migrations within the context of the application, simply run `rake
 db:migrate`. When accessing the engine through `http://localhost:3000/blog`, the
 articles will be empty. This is because the table created inside the application is
@@ -780,8 +790,13 @@ different from the one created within the engine. Go ahead, play around with the
 newly mounted engine. You'll find that it's the same as when it was only an
 engine.
 
+在应用程序环境下运行这些迁移，可简单的运行`rake db:migrate`。然后，通过`http://localhost:3000/blog`
+访问engine时，文章为空，这是因为，在应用程序中创建表和在engine中创建表是不同。
+
 If you would like to run migrations only from one engine, you can do it by
 specifying `SCOPE`:
+
+如果，只想从一个engine中运行迁移，可通过`SCOPE`来指定环境。
 
 ```bash
 rake db:migrate SCOPE=blorgh
@@ -789,6 +804,9 @@ rake db:migrate SCOPE=blorgh
 
 This may be useful if you want to revert engine's migrations before removing it.
 To revert all migrations from blorgh engine you can run code such as:
+
+在移除engine之前，回滚engine的迁移时，非常的有用。为了移除blorgh engine的所有迁移，
+可以输入如下的命令:
 
 ```bash
 rake db:migrate SCOPE=blorgh VERSION=0
@@ -803,11 +821,17 @@ application to provide links between the pieces of the engine and the pieces of
 the application. In the case of the `blorgh` engine, making articles and comments
 have authors would make a lot of sense.
 
+当engine创建时，可能需要使用应用程序中的特定类，从而提供engine和应用程序之间的链接。
+例如，在`blorgh`的engine中，如何让文章和注释拥有作者。
+
 A typical application might have a `User` class that would be used to represent
 authors for an article or a comment. But there could be a case where the
 application calls this class something different, such as `Person`. For this
 reason, the engine should not hardcode associations specifically for a `User`
 class.
+
+典型的应用程序可能使用`User`来，用来表示文章或注释的作者。但有的应用中，可能使用`Person`。
+因此，就不能在engine中使用硬编码的关联。
 
 To keep it simple in this case, the application will have a class called `User`
 that represents the users of the application (we'll get into making this
@@ -831,7 +855,7 @@ First, the `author_name` text field needs to be added to the
 `app/views/blorgh/articles/_form.html.erb` partial inside the engine. This can be
 added above the `title` field with this code:
 
-```html+erb
+```erb
 <div class="field">
   <%= f.label :author_name %><br>
   <%= f.text_field :author_name %>
@@ -839,10 +863,11 @@ added above the `title` field with this code:
 ```
 
 Next, we need to update our `Blorgh::ArticleController#article_params` method to
-permit the new form parameter:
+permit(许可) the new form parameter:
 
 ```ruby
 def article_params
+  # 如下代码的含义，:article的hash中必须带有:title, :text, :author_name三个参数
   params.require(:article).permit(:title, :text, :author_name)
 end
 ```
@@ -851,6 +876,9 @@ The `Blorgh::Article` model should then have some code to convert the `author_na
 field into an actual `User` object and associate it as that article's `author`
 before the article is saved. It will also need to have an `attr_accessor` set up
 for this field, so that the setter and getter methods are defined for it.
+
+`Blorgh::Article`模型将`author_name`域转换为实际的`User`对象，在文章保存前，关联文章的`author`。
+这需要使用`attr_accessor`设置该域。
 
 To do all this, you'll need to add the `attr_accessor` for `author_name`, the
 association for the author and the `before_save` call into
@@ -875,7 +903,13 @@ of associating the records in the `blorgh_articles` table with the records in th
 `users` table. Because the association is called `author`, there should be an
 `author_id` column added to the `blorgh_articles` table.
 
+通过使用带有`User`类的`author`关联对象，从而建立了engine与应用程序的关联。然后，
+需要在`blorgh_articles`表和`users`表之间，建立关联，由于关联名为`author`，必须
+在`blorgh_articles`表中，添加一个`author_id`列。
+
 To generate this new column, run this command within the engine:
+
+为了生成一个新的列，需要在engine中运行如下的命令: 
 
 ```bash
 $ bin/rails g migration add_author_id_to_blorgh_articles author_id:integer
@@ -885,6 +919,9 @@ NOTE: Due to the migration's name and the column specification after it, Rails
 will automatically know that you want to add a column to a specific table and
 write that into the migration for you. You don't need to tell it any more than
 this.
+
+注意: Rails可从迁移名中推断出你的目的，为特定的表添加新列。所以，取个有意义的迁移名
+很重要。
 
 This migration will need to be run on the application. To do that, it must first
 be copied using this command:
@@ -917,7 +954,7 @@ represented by the `blorgh_articles` table from the engine.
 Finally, the author's name should be displayed on the article's page. Add this code
 above the "Title" output inside `app/views/blorgh/articles/show.html.erb`:
 
-```html+erb
+```erb
 <p>
   <b>Author:</b>
   <%= @article.author %>
@@ -926,6 +963,8 @@ above the "Title" output inside `app/views/blorgh/articles/show.html.erb`:
 
 By outputting `@article.author` using the `<%=` tag, the `to_s` method will be
 called on the object. By default, this will look quite ugly:
+
+使用`<%=`标签输出`@article.author`，会自动调用对象的`to_s`方法，这看起来非常的丑陋。
 
 ```
 #<User:0x00000100ccb3b0>
@@ -954,6 +993,11 @@ provide this access is to change the engine's scoped `ApplicationController` to
 inherit from the main application's `ApplicationController`. For our Blorgh
 engine this would be done by changing
 `app/controllers/blorgh/application_controller.rb` to look like:
+
+Rails的控制器通常用来共享权限代码、以及访问session变量，这些默认从`ApplicationController`
+中继承。而，Rails的engine使用了命名隔离的控制器，命名空间阻止了代码冲突，engine的控制器
+经常需要访问应用程序的主控制器(`ApplicationController`)。简单的方法是，将继承的控制器修改
+为`ApplicationController`。
 
 ```ruby
 class Blorgh::ApplicationController < ApplicationController
@@ -985,6 +1029,8 @@ To define this configuration setting, you should use a `mattr_accessor` inside
 the `Blorgh` module for the engine. Add this line to `lib/blorgh.rb` inside the
 engine:
 
+定义可配置的设置，需要使用`mattr_accessor`，在engine的`lib/blorgh.rb`中设置。
+
 ```ruby
 mattr_accessor :author_class
 ```
@@ -1012,6 +1058,8 @@ you could instead just override the `author_class` getter method inside the
 `Blorgh` module in the `lib/blorgh.rb` file to always call `constantize` on the
 saved value before returning the result:
 
+为了避免每次调用constantize，可使用如下的方法覆盖`author_class`的getter方法。
+
 ```ruby
 def self.author_class
   @@author_class.constantize
@@ -1031,6 +1079,9 @@ Since we changed the `author_class` method to return a `Class` instead of a
 `String`, we must also modify our `belongs_to` definition in the `Blorgh::Article`
 model:
 
+改变了`author_class`方法，返回为`Class`而不是`String`，所以，需要修改`Blorgh::Article`模型中
+`belongs_to`的定义。
+
 ```ruby
 belongs_to :author, class_name: Blorgh.author_class.to_s
 ```
@@ -1040,8 +1091,14 @@ be used. By using an initializer, the configuration will be set up before the
 application starts and calls the engine's models, which may depend on this
 configuration setting existing.
 
+为了给应用程序设置配置选项，需要使用初始化器。使用初始化器是，配置将会在应用启动和
+调用engine模型之前设置，启动器一般与engine同名。
+
 Create a new initializer at `config/initializers/blorgh.rb` inside the
 application where the `blorgh` engine is installed and put this content in it:
+
+在安装了`blorgh`的应用程序中，创建初始化器文件`config/initializers/blorgh.rb`，并
+在其中添加如下行:
 
 ```ruby
 Blorgh.author_class = "User"
@@ -1052,6 +1109,10 @@ rather than the class itself. If you were to use the class, Rails would attempt
 to load that class and then reference the related table. This could lead to
 problems if the table wasn't already existing. Therefore, a `String` should be
 used and then converted to a class using `constantize` in the engine later on.
+
+警告: 使用类的`String`版本，而不是class本身。如果使用class，Rails会尝试加载类，
+然后引用相关的表。如果表没有事前存在，就会会引起一个问题。所以，使用`String`，然后再
+用`constantize`将其转换成类。
 
 Go ahead and try to create a new article. You will see that it works exactly in the
 same way as before, except this time the engine is using the configuration
@@ -1072,12 +1133,13 @@ much the same functionality as a Rails application. In fact, a Rails
 application's functionality is actually a superset of what is provided by
 engines!
 
+Engine中可以使用初始化器，国际化或者其他的配置选项。
+
 If you wish to use an initializer - code that should run before the engine is
 loaded - the place for it is the `config/initializers` folder. This directory's
-functionality is explained in the [Initializers
-section](configuring.html#initializers) of the Configuring guide, and works
-precisely the same way as the `config/initializers` directory inside an
-application. The same thing goes if you want to use a standard initializer.
+functionality is explained in the [Initializers section](configuring.html#initializers) 
+of the Configuring guide, and works precisely the same way as the `config/initializers` 
+directory inside an application. The same thing goes if you want to use a standard initializer.
 
 For locales, simply place the locale files in the `config/locales` directory,
 just like you would in an application.
